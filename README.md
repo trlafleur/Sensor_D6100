@@ -7,7 +7,7 @@ My system has 63 active zones, most are using wireless Ademco-5800 series sensor
 
 It read and parses serial data from the alarm and format them into MySensor messages.
 
-   This is running on a MoteinoMEGA, and connect to the D6100 via a TTL serial interface
-   Radio is 915MHz RFM69HW
-   Tested with MySensor 2.0.0 beta
-   Tested with D6100 firmware 8.07
+   This is running on a MoteinoMEGA, and connect to the D6100 via a TTL serial interface.
+   Radio is 915MHz RFM69HW.
+   Tested with MySensor 2.0.0 beta.
+   Tested with D6100 firmware 8.07.
