@@ -357,7 +357,7 @@ void receive(const MyMessage &message)
     
      if ( message.type==V_VAR3) 
       {
-        debug2(PSTR("Received V_VAR2 message from gw: %s\n"), message.getULong());
+        debug2(PSTR("Received V_VAR3 message from gw: %s\n"), message.getULong());
       }
 
      if ( message.type==V_VAR3) 
