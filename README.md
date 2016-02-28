@@ -5,7 +5,7 @@ Apex was bought by Ademco who was bought by Honeywell. Its is NOT compatible wit
 
 My system has 63 active zones, most are using wireless Ademco-5800 series sensors
 
-It read and parses serial data from the alarm and format them into MySensor messages.
+It read's and parses serial data from the alarm and format them into MySensor messages.
 
    This is running on a MoteinoMEGA, and connect to the D6100 via a TTL serial interface.
    
