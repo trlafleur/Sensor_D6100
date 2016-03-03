@@ -1,5 +1,5 @@
 /*
- *  Ver 1.00  27 Feb 2016 TRL 
+ *  Ver 1.00  2 Mar 2016 TRL 
  *  
  *  A program to control an APEX Destiny 6100(AN) Alarm panel. 
  *   This is running on a MoteinoMEGA, so we have lots of memory available
@@ -56,21 +56,24 @@
 #define MY_IS_RFM69HW          true
 #define MY_RFM69_FREQUENCY     RF69_915MHZ      // this set frequency band, not the real operating frequency
 
+#define MY_LEDS_BLINKING_FEATURE
+#define MY_WITH_LEDS_BLINKING_INVERSE
+
 //// Moteino 
 //#define MY_RF69_SPI_CS 10
 //#define MY_RF69_IRQ_PIN 2
 //#define MY_RF69_IRQ_NUM 0
-//#define RADIO_ERROR_LED_PIN 7   // Error led pin
-//#define RADIO_RX_LED_PIN    6   // Receive led pin
-//#define RADIO_TX_LED_PIN    3   // the PCB, on board LED
+//#define MY_DEFAULT_TX_LED_PIN     9   // the PCB, on board LED
+//#define MY_DEFAULT_ERR_LED_PIN    7
+//#define MY_DEFAULT_RX_LED_PIN     6
 
 // MoteinoMEGA
 #define MY_RF69_SPI_CS      4
 #define MY_RF69_IRQ_PIN     2
 #define MY_RF69_IRQ_NUM     2
-#define RADIO_TX_LED_PIN    15                  // the PCB, on board LED
-//#define RADIO_ERROR_LED_PIN 22                // Error led pin
-//#define RADIO_RX_LED_PIN    21                // Receive led pin
+#define MY_DEFAULT_TX_LED_PIN     15   // the PCB, on board LED
+//#define MY_DEFAULT_ERR_LED_PIN    7
+//#define MY_DEFAULT_RX_LED_PIN     6
 
 // Enabled repeater feature for this node
 #define MY_REPEATER_FEATURE
@@ -79,7 +82,7 @@
 //#define MY_PARENT_NODE_ID 0                   // GW ID
 #define CHILD_ID    1                           // Id of my Alarm sensor child
 
-
+/* ************************************************************************************** */
 /* These are use for local debug of code, hwDebugPrint is defined in MyHwATMega328.cpp */
 #ifdef MY_DEBUG1
 #define debug1(x,...) hwDebugPrint(x, ##__VA_ARGS__)
@@ -92,7 +95,6 @@
 #else
 #define debug2(x,...)
 #endif
-
 
 /* ************************************************************************************** */
 #include <SPI.h>
@@ -113,8 +115,6 @@ MyMessage CUSTOMMsg       (CHILD_ID,V_CUSTOM);    // 48
 /* ************************************************************************************** */
 #define DisplayID 0x37                      // this is the ID in hex of the control panel Display ID we will uses (0x30 --> 0x37)
 #define ControlPanelID 0x10                 // D6100
-
-#define LED1 15                             // Led pin
 
 static char inString [30] = "";             // used by serial command generator
 static char outString[40] = "";
@@ -162,15 +162,15 @@ void setup()
   Serial1.begin (1200);                  // Apex D6100 panel
 
 /* lets say a few words on alarm display at startup to be nice */
-  delay (1000);
+  wait (1000);
   Serial1.println ("0Bsi04900B5");      // Control
-  delay (500);
+  wait (500);
   Serial1.println ("0Bsi09100B8");      // Is
-  delay (500);
+  wait (500);
   Serial1.println ("0Bsi27800B1");      // Active
-  delay (500);
+  wait (500);
 
-  pinMode(LED1, OUTPUT);                 // Led
+ // pinMode(LED1, OUTPUT);                 // Led
 
 
 //  setTime(21,12,15,02,9,2017);          // Set Arduino clock to this time manually for testing
@@ -214,11 +214,11 @@ void presentation()
 {
   // Send the sketch version information to the gateway and Controller
   sendSketchInfo(SKETCHNAME, SKETCHVERSION);
-  delay (250);
+  wait (250);
   
   // Register this device as Custom sensor
   present(CHILD_ID, S_CUSTOM);       // S_CUSTOM = 23
-  delay (250);
+  wait (250);
 }
 
 /* **************************************************************************** */
@@ -402,7 +402,7 @@ void setTimeD6100 ()
         send2KeysD6100( minute() );
 
 /* We need to send 1 = AM, 2 = PM */
-        if ( isAM() )     send1KeyD6100 (1);    // Returns true if time now is AM  
+        if ( isAM() )     send1KeyD6100 (1);    // Returns true if time now is AM 
         else              send1KeyD6100 (2);
        
 /* We need to send the day of the week: 1 = Sunday, then month, day, 2 digit year */
@@ -418,6 +418,9 @@ void setTimeD6100 ()
 /* **************************************************************************** */
 void loop()
 {
+
+  _process ();
+  
   currentTime = millis();                       // get the current time
   if (currentTime - lastSend > WatchDog_FREQUENCY)
   {
@@ -466,6 +469,7 @@ void loop()
         
       /* Here we send a MySensor messages */
         send(VAR1Msg.set(msgType,0));             // Send Message Type to gateway
+        wait (200);
         send(VAR2Msg.set(msgZone,0));             // Send Zone to gateway      
       }
 
